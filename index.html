@@ -32,7 +32,6 @@
   }
   ::selection{background:var(--gold);color:#fff;}
 
-  /* ---- Header & Nav ---- */
   header{
     padding:20px 20px 14px;
     border-bottom:1px solid var(--line);
@@ -75,7 +74,6 @@
 
   main{max-width:960px;margin:0 auto;padding:20px 16px 0;}
 
-  /* ---- Summary ---- */
   .summary-grid{
     display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:20px;
   }
@@ -111,7 +109,6 @@
   .mini-card .label{font-size:11.5px;color:var(--ink-soft);margin-bottom:2px;}
   .mini-card .value{font-family:var(--serif);font-size:20px;font-weight:600;}
 
-  /* ---- Visual Chart Panel ---- */
   .chart-card{
     background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);
     padding:16px;margin-bottom:24px;display:flex;flex-direction:column;gap:14px;
@@ -131,7 +128,6 @@
   .legend-item{display:flex;align-items:center;gap:6px;font-size:12px;}
   .legend-color{width:10px;height:10px;border-radius:3px;flex:none;}
 
-  /* ---- Section Headings ---- */
   .section-title{
     font-family:var(--serif);font-size:18px;font-weight:600;
     margin:24px 0 12px;display:flex;align-items:center;justify-content:space-between;
@@ -140,7 +136,6 @@
     font-family:var(--sans);font-size:12px;font-weight:400;color:var(--ink-soft);
   }
 
-  /* ---- Income ---- */
   .income-grid{display:grid;grid-template-columns:1fr;gap:14px;}
   @media(min-width:680px){ .income-grid{grid-template-columns:1fr 1fr;} }
   .income-card{
@@ -183,7 +178,6 @@
     font-family:var(--serif);font-size:14.5px;font-weight:600;margin-top:2px;
   }
 
-  /* ---- Categories & Items ---- */
   .search-box{
     width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 12px;
     font-size:13px;background:var(--paper-raised);color:var(--ink);margin-bottom:12px;
@@ -267,7 +261,6 @@
   .pos{color:var(--positive);}
   .neg{color:var(--negative);}
 
-  /* ---- Footer ---- */
   footer{
     max-width:960px;margin:30px auto 0;padding:16px 16px 30px;
     border-top:1px solid var(--line);
@@ -327,7 +320,6 @@
     </div>
   </div>
 
-  <!-- VISUAL CHART -->
   <div class="chart-card">
     <div class="pie-wrapper">
       <div class="pie-chart" id="categoryPieChart"></div>
@@ -390,12 +382,38 @@
   function uid(){ return Math.random().toString(36).slice(2,10); }
   function currentMonthStr(){ return new Date().toISOString().slice(0,7); }
 
+  // Função para buscar a renda prevista mais recente dos meses anteriores
+  function getLatestPrevistoIncome(){
+    try {
+      var parts = activeMonth.split("-");
+      var yr = parseInt(parts[0], 10), mo = parseInt(parts[1], 10) - 2;
+      // olha até 12 meses para trás para achar uma projeção existente
+      for(var i = 0; i < 12; i++){
+        var d = new Date(yr, mo - i, 1);
+        var key = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2,"0");
+        var raw = localStorage.getItem(STORAGE_KEY_PREFIX + key);
+        if(raw){
+          var parsed = JSON.parse(raw);
+          if(parsed.income && parsed.income.previsto && parsed.income.previsto.length > 0){
+            // Retorna uma cópia dos itens previstos com novos IDs para evitar conflito
+            return parsed.income.previsto.map(function(r){
+              return { id: uid(), name: r.name, value: r.value };
+            });
+          }
+        }
+      }
+    } catch(e){}
+    
+    // Padrão inicial se não achar histórico
+    return [ {id:uid(), name:"Salário", value:3000}, {id:uid(), name:"Freelance", value:800} ];
+  }
+
   function defaultMonthData(month){
     return {
       month: month || currentMonthStr(),
       income: {
-        previsto: [ {id:uid(),name:"Salário",value:3000}, {id:uid(),name:"Freelance",value:800} ],
-        real:     [ {id:uid(),name:"Salário",value:3000}, {id:uid(),name:"Freelance",value:500} ]
+        previsto: getLatestPrevistoIncome(),
+        real:     [ {id:uid(), name:"Salário", value:3000}, {id:uid(), name:"Freelance", value:500} ]
       },
       categories: [
         { id:uid(), name:"Moradia", open:true, items:[
@@ -475,7 +493,6 @@
     if(text!==undefined) e.textContent = text; return e;
   }
 
-  /* ---- Navigation ---- */
   function changeMonth(delta){
     var parts = activeMonth.split("-");
     var yr = parseInt(parts[0],10), mo = parseInt(parts[1],10) - 1 + delta;
@@ -495,7 +512,6 @@
     }
   });
 
-  /* ---- Calculations ---- */
   function sumIncome(kind){
     return data.income[kind].reduce(function(a,r){ return a + (Number(r.value)||0); }, 0);
   }
@@ -506,7 +522,6 @@
     return data.categories.reduce(function(a,c){ return a + sumCategory(c, field); }, 0);
   }
 
-  /* ---- Renderers ---- */
   function renderAll(){
     document.getElementById("monthField").value = activeMonth;
     renderIncome();
@@ -522,13 +537,40 @@
     document.getElementById("totalIncomeReal").textContent = brl(sumIncome("real"));
   }
 
+  // Função para propagar a renda prevista alterada para os meses futuros
+  function propagatePrevistoToFutureMonths(){
+    try {
+      var parts = activeMonth.split("-");
+      var currentYr = parseInt(parts[0], 10), currentMo = parseInt(parts[1], 10) - 1;
+      
+      // Olha até 12 meses à frente para atualizar os que ainda possuem dados salvos
+      for(var i = 1; i <= 12; i++){
+        var d = new Date(currentYr, currentMo + i, 1);
+        var key = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2,"0");
+        var raw = localStorage.getItem(STORAGE_KEY_PREFIX + key);
+        if(raw){
+          var parsed = JSON.parse(raw);
+          // Atualiza apenas a renda prevista do mês futuro espelhando a alteração atual
+          parsed.income.previsto = data.income.previsto.map(function(r){
+            return { id: uid(), name: r.name, value: r.value };
+          });
+          localStorage.setItem(STORAGE_KEY_PREFIX + key, JSON.stringify(parsed));
+        }
+      }
+    } catch(e){}
+  }
+
   function renderIncomeGroup(kind, container){
     container.innerHTML = "";
     data.income[kind].forEach(function(row){
       var wrap = el("div","income-row");
       var nameInput = document.createElement("input");
       nameInput.type = "text"; nameInput.value = row.name; nameInput.placeholder = "Fonte de renda";
-      nameInput.addEventListener("change", function(){ row.name = nameInput.value; scheduleSave(); });
+      nameInput.addEventListener("change", function(){ 
+        row.name = nameInput.value; 
+        if(kind === "previsto") propagatePrevistoToFutureMonths();
+        scheduleSave(); 
+      });
 
       var currWrap = el("div","curr-input-wrap");
       var currSpan = el("span",null,"R$");
@@ -541,6 +583,12 @@
         renderSummary(); renderChart();
         document.getElementById("totalIncomePrevisto").textContent = brl(sumIncome("previsto"));
         document.getElementById("totalIncomeReal").textContent = brl(sumIncome("real"));
+        
+        // Se for renda prevista, propaga automaticamente para os meses futuros!
+        if(kind === "previsto"){
+          propagatePrevistoToFutureMonths();
+        }
+        
         scheduleSave();
       });
       currWrap.appendChild(currSpan); currWrap.appendChild(valInput);
@@ -548,6 +596,7 @@
       var del = el("button","row-del","×");
       del.addEventListener("click", function(){
         data.income[kind] = data.income[kind].filter(function(r){ return r.id !== row.id; });
+        if(kind === "previsto") propagatePrevistoToFutureMonths();
         renderIncome(); renderSummary(); renderChart(); scheduleSave();
       });
 
@@ -705,7 +754,6 @@
     badge.textContent = (saldoDiff>=0 ? "▲ " : "▼ ") + brl(Math.abs(saldoDiff)) + " vs. previsto";
   }
 
-  /* ---- Visual Donut Chart Generator ---- */
   function renderChart(){
     var chart = document.getElementById("categoryPieChart");
     var legend = document.getElementById("categoryPieLegend");
@@ -741,11 +789,11 @@
     chart.style.background = "conic-gradient(" + gradients.join(",") + ")";
   }
 
-  /* ---- Top Actions ---- */
   document.querySelectorAll("[data-add-income]").forEach(function(btn){
     btn.addEventListener("click", function(){
       var kind = btn.getAttribute("data-add-income");
       data.income[kind].push({id:uid(), name:"", value:0});
+      if(kind === "previsto") propagatePrevistoToFutureMonths();
       renderIncome(); scheduleSave();
     });
   });

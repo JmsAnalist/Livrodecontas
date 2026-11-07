@@ -51,7 +51,6 @@
   }
   h1 span{color:var(--gold);}
 
-  /* Mode Switcher (Pessoal / Empresa) */
   .mode-switch{
     display:flex;gap:4px;background:var(--line-soft);padding:3px;border-radius:10px;
   }
@@ -88,7 +87,6 @@
 
   main{max-width:960px;margin:0 auto;padding:20px 16px 0;}
 
-  /* Tabs Navigation (Finanças / Feira) */
   .app-tabs{
     display:flex;gap:10px;margin-bottom:20px;border-bottom:1px solid var(--line);padding-bottom:10px;
   }
@@ -187,7 +185,7 @@
   .curr-input-wrap{display:flex;align-items:center;gap:2px;}
   .curr-input-wrap span{font-size:13px;color:var(--ink-soft);}
   input.curr{
-    width:82px;text-align:right;border:none;background:transparent;
+    width:90px;text-align:right;border:none;background:transparent;
     font-family:var(--serif);font-size:14px;color:var(--ink);padding:4px 2px;
   }
   input.curr:focus{outline:none;border-bottom:1px solid var(--gold);}
@@ -247,7 +245,7 @@
   .cat-body-inner{padding:6px 14px 12px;}
 
   .item-head-row,.item-row{
-    display:grid;grid-template-columns:22px 1fr 62px 62px 55px 16px;
+    display:grid;grid-template-columns:22px 1fr 70px 70px 55px 16px;
     gap:4px;align-items:center;padding:5px 0;
   }
   .item-head-row{
@@ -287,19 +285,36 @@
   }
   .add-cat-card:hover{border-color:var(--gold);color:var(--gold);}
 
-  /* Market List Styles */
+  /* Market List Styles with Qtd and Total Calc */
   .market-card{
     background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);
     padding:16px;margin-bottom:16px;
   }
-  .market-item-row{
-    display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line-soft);
+  .market-head-row, .market-item-row{
+    display:grid;grid-template-columns:22px 1fr 48px 70px 75px 16px;
+    gap:5px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line-soft);
   }
-  .market-item-row.checked span{text-decoration:line-through;color:var(--ink-soft);}
+  .market-head-row{
+    font-size:10px;color:var(--ink-soft);border-bottom:1px solid var(--line);padding-bottom:6px;font-weight:600;
+  }
+  .market-head-row span:nth-child(3), .market-head-row span:nth-child(4), .market-head-row span:nth-child(5){text-align:right;}
+  .market-item-row.checked input[type="text"]{text-decoration:line-through;color:var(--ink-soft);}
   .market-item-row input[type="text"]{
-    flex:1;border:none;background:transparent;font-size:14px;color:var(--ink);
+    border:none;background:transparent;font-size:13px;color:var(--ink);
   }
   .market-item-row input[type="text"]:focus{outline:none;border-bottom:1px solid var(--gold);}
+  .market-item-row input.qty-input{
+    width:100%;text-align:center;border:none;background:var(--line-soft);border-radius:4px;
+    font-family:var(--sans);font-size:12.5px;padding:3px;
+  }
+  .market-item-row input.qty-input:focus{outline:none;border:1px solid var(--gold);}
+  .market-item-total{
+    font-family:var(--serif);font-size:12.5px;text-align:right;font-weight:600;color:var(--ink-soft);
+  }
+  .market-total-bar{
+    display:flex;justify-content:space-between;margin-top:14px;padding-top:10px;border-top:1px solid var(--line);
+    font-family:var(--serif);font-size:15px;font-weight:600;
+  }
 
   .pos{color:var(--positive);}
   .neg{color:var(--negative);}
@@ -316,7 +331,7 @@
   }
   .ftr-btn:hover{border-color:var(--gold);color:var(--ink);}
   .ftr-btn.danger:hover{border-color:var(--negative);color:var(--negative);}
-  .privacy-note{font-size:11px;color:var(--ink-soft);line-height:1.5;max-width:520px;}
+  .privacy-note{font-size:11.5px;color:var(--ink-soft);line-height:1.5;max-width:520px;}
   input[type="file"]{display:none;}
 
   .toast{
@@ -334,8 +349,8 @@
   <div class="header-row">
     <h1>Livro de <span>Contas</span></h1>
     <div class="mode-switch">
-      <button class="mode-btn active" id="modePersonalBtn" onclick="switchMode('pessoal')">🏠 Pessoal</button>
-      <button class="mode-btn" id="modeBusinessBtn" onclick="switchMode('empresa')">🏢 Empresa</button>
+      <button class="mode-btn active" id="modePersonalBtn" onclick="app.switchMode('pessoal')">🏠 Pessoal</button>
+      <button class="mode-btn" id="modeBusinessBtn" onclick="app.switchMode('empresa')">🏢 Empresa</button>
     </div>
   </div>
   <div class="sub-header">
@@ -350,13 +365,11 @@
 
 <main>
 
-  <!-- ABAS PRINCIPAIS (Finanças vs Feira) -->
   <div class="app-tabs">
-    <button class="tab-btn active" onclick="switchTab('finance')">📊 Finanças & Orçamento</button>
-    <button class="tab-btn" onclick="switchTab('market')">🛒 Lista de Compras / Feira</button>
+    <button class="tab-btn active" onclick="app.switchTab('finance')">📊 Finanças & Orçamento</button>
+    <button class="tab-btn" onclick="app.switchTab('market')">🛒 Lista de Compras / Feira</button>
   </div>
 
-  <!-- PAINEL DE FINANÇAS -->
   <div class="tab-pane active" id="paneFinance">
     <div class="summary-grid">
       <div class="summary-hero">
@@ -411,12 +424,23 @@
     <button class="add-cat-card" id="addCatBtn">+ criar nova categoria</button>
   </div>
 
-  <!-- PAINEL DE FEIRA / COMPRAS -->
   <div class="tab-pane" id="paneMarket">
-    <div class="section-title">Lista de Supermercado & Feira <small>ideal para guiar as compras</small></div>
+    <div class="section-title">Lista de Supermercado & Feira <small>quantidade e totais</small></div>
     <div class="market-card">
+      <div class="market-head-row">
+        <span></span>
+        <span>Item</span>
+        <span>Qtd</span>
+        <span>Est. Unit.</span>
+        <span>Total Est.</span>
+        <span></span>
+      </div>
       <div id="marketListRows"></div>
-      <button class="add-row-btn" id="addMarketItemBtn" style="margin-top:10px;">+ adicionar item à lista</button>
+      <button class="add-row-btn" id="addMarketItemBtn" style="margin-top:12px;">+ adicionar item à lista</button>
+      <div class="market-total-bar">
+        <span>Total Geral da Lista</span>
+        <span id="marketTotalSum">R$ 0,00</span>
+      </div>
     </div>
   </div>
 
@@ -439,11 +463,11 @@
 <div class="toast" id="toast"></div>
 
 <script>
-(function(){
+window.app = (function(){
   "use strict";
   var STORAGE_KEY_PREFIX = "livro_contas_";
   var toastTimer=null, saveTimer=null;
-  var currentMode = "pessoal"; // 'pessoal' ou 'empresa'
+  var currentMode = "pessoal";
 
   var CAT_COLORS = ["#5B7A94","#C79A3E","#B65C42","#3C7A6B","#8570A0","#A2495A","#4C6E8C","#8C6A3F"];
 
@@ -474,7 +498,7 @@
   }
 
   function defaultMonthData(month){
-    m = month || currentMonthStr();
+    var m = month || currentMonthStr();
     return {
       month: m,
       income: {
@@ -482,10 +506,10 @@
         real:     [ {id:uid(), name: currentMode === 'pessoal' ? "Salário Principal" : "Faturamento Empresa", value: 0} ]
       },
       marketList: [
-        {id:uid(), name:"Arroz / Feijão", checked:false},
-        {id:uid(), name:"Carnes / Frango", checked:false},
-        {id:uid(), name:"Hortifruti (Feira)", checked:false},
-        {id:uid(), name:"Material de Limpeza", checked:false}
+        {id:uid(), name:"Arroz / Feijão", qty:1, estimado:0, checked:false},
+        {id:uid(), name:"Carnes / Frango", qty:1, estimado:0, checked:false},
+        {id:uid(), name:"Hortifruti (Feira)", qty:1, estimado:0, checked:false},
+        {id:uid(), name:"Material de Limpeza", qty:1, estimado:0, checked:false}
       ],
       categories: currentMode === 'pessoal' ? [
         { id:uid(), name:"Moradia", open:true, items:[
@@ -527,12 +551,21 @@
   function loadMonthData(m){
     try{
       var raw = localStorage.getItem(getStorageKey(m));
-      if(raw) return JSON.parse(raw);
+      if(raw) {
+        var parsed = JSON.parse(raw);
+        if(parsed.marketList){
+          parsed.marketList.forEach(function(item){
+            if(item.qty === undefined) item.qty = 1;
+            if(item.estimado === undefined) item.estimado = 0;
+          });
+        }
+        return parsed;
+      }
     }catch(e){}
     return defaultMonthData(m);
   }
 
-  window.switchMode = function(mode){
+  function switchMode(mode){
     currentMode = mode;
     document.getElementById("modePersonalBtn").classList.toggle("active", mode === 'pessoal');
     document.getElementById("modeBusinessBtn").classList.toggle("active", mode === 'empresa');
@@ -540,7 +573,7 @@
     renderAll();
   }
 
-  window.switchTab = function(tabName){
+  function switchTab(tabName){
     document.querySelectorAll(".tab-btn").forEach(function(b){ b.classList.remove("active"); });
     document.querySelectorAll(".tab-pane").forEach(function(p){ p.classList.remove("active"); });
     if(tabName === 'finance'){
@@ -567,8 +600,10 @@
 
   function flashSaved(ok){
     var dot = document.getElementById("saveDot"), txt = document.getElementById("saveText");
-    if(ok){ dot.style.background = "var(--positive)"; txt.textContent = "Salvo ("+currentMode+")"; }
-    else { dot.style.background = "var(--negative)"; txt.textContent = "Erro ao salvar"; }
+    if(dot && txt){
+      if(ok){ dot.style.background = "var(--positive)"; txt.textContent = "Salvo ("+currentMode+")"; }
+      else { dot.style.background = "var(--negative)"; txt.textContent = "Erro ao salvar"; }
+    }
   }
 
   function brl(n){
@@ -581,8 +616,9 @@
 
   function formatNum(n){
     n = Number(n)||0;
-    return n === 0 ? "" : n.toLocaleString('pt-BR', {minimumFractionDigits: (n%1!==0)?2:0, maximumFractionDigits:2});
+    return n === 0 ? "" : n.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
   }
+
   function parseNum(s){
     if(!s) return 0;
     s = String(s).trim().replace(/[^\d,.-]/g,"");
@@ -631,7 +667,8 @@
   }
 
   function renderAll(){
-    document.getElementById("monthField").value = activeMonth;
+    var field = document.getElementById("monthField");
+    if(field) field.value = activeMonth;
     renderIncome();
     renderCategories();
     renderSummary();
@@ -666,6 +703,7 @@
   }
 
   function renderIncomeGroup(kind, container){
+    if(!container) return;
     container.innerHTML = "";
     data.income[kind].forEach(function(row){
       var wrap = el("div","income-row");
@@ -705,14 +743,20 @@
     });
   }
 
-  // --- MARKET LIST RENDERING ---
   function renderMarketList(){
     var container = document.getElementById("marketListRows");
     if(!container) return;
     container.innerHTML = "";
     if(!data.marketList) data.marketList = [];
 
+    var grandTotal = 0;
+
     data.marketList.forEach(function(item){
+      var qty = Number(item.qty) || 1;
+      var unitEst = Number(item.estimado) || 0;
+      var itemTotal = qty * unitEst;
+      grandTotal += itemTotal;
+
       var row = el("div","market-item-row" + (item.checked ? " checked" : ""));
       var chk = document.createElement("input");
       chk.type = "checkbox"; chk.checked = !!item.checked;
@@ -723,8 +767,28 @@
       });
 
       var nameInput = document.createElement("input");
-      nameInput.type = "text"; nameInput.value = item.name; nameInput.placeholder = "Item da feira / mercado";
+      nameInput.type = "text"; nameInput.value = item.name; nameInput.placeholder = "Item";
       nameInput.addEventListener("change", function(){ item.name = nameInput.value; scheduleSave(); });
+
+      var qtyInput = document.createElement("input");
+      qtyInput.type = "number"; qtyInput.className = "qty-input"; qtyInput.min = "1"; qtyInput.value = qty;
+      qtyInput.addEventListener("change", function(){
+        item.qty = parseInt(qtyInput.value) || 1;
+        renderMarketList();
+        scheduleSave();
+      });
+
+      var estInput = document.createElement("input");
+      estInput.type = "text"; estInput.className = "curr"; estInput.inputMode = "decimal";
+      estInput.value = formatNum(item.estimado);
+      estInput.addEventListener("change", function(){
+        item.estimado = parseNum(estInput.value);
+        estInput.value = formatNum(item.estimado);
+        renderMarketList();
+        scheduleSave();
+      });
+
+      var totalCell = el("div","market-item-total", brl(itemTotal));
 
       var del = el("button","row-del","×");
       del.addEventListener("click", function(){
@@ -732,21 +796,33 @@
         renderMarketList(); scheduleSave();
       });
 
-      row.appendChild(chk); row.appendChild(nameInput); row.appendChild(del);
+      row.appendChild(chk);
+      row.appendChild(nameInput);
+      row.appendChild(qtyInput);
+      row.appendChild(estInput);
+      row.appendChild(totalCell);
+      row.appendChild(del);
       container.appendChild(row);
+    });
+
+    document.getElementById("marketTotalSum").textContent = brl(grandTotal);
+  }
+
+  var addMarketBtn = document.getElementById("addMarketItemBtn");
+  if(addMarketBtn){
+    addMarketBtn.addEventListener("click", function(){
+      if(!data.marketList) data.marketList = [];
+      data.marketList.push({id:uid(), name:"", qty:1, estimado:0, checked:false});
+      renderMarketList(); scheduleSave();
     });
   }
 
-  document.getElementById("addMarketItemBtn").addEventListener("click", function(){
-    if(!data.marketList) data.marketList = [];
-    data.marketList.push({id:uid(), name:"", checked:false});
-    renderMarketList(); scheduleSave();
-  });
-
   function renderCategories(){
     var grid = document.getElementById("catGrid");
+    if(!grid) return;
     grid.innerHTML = "";
-    var query = document.getElementById("searchBox").value.trim().toLowerCase();
+    var searchBox = document.getElementById("searchBox");
+    var query = searchBox ? searchBox.value.trim().toLowerCase() : "";
 
     data.categories.forEach(function(cat, idx){
       var matches = !query || cat.name.toLowerCase().includes(query) || cat.items.some(function(i){ return i.name.toLowerCase().includes(query); });
@@ -872,7 +948,10 @@
     return row;
   }
 
-  document.getElementById("searchBox").addEventListener("input", renderCategories);
+  var searchEl = document.getElementById("searchBox");
+  if(searchEl){
+    searchEl.addEventListener("input", renderCategories);
+  }
 
   function renderSummary(){
     var rendaReal = sumIncome("real");
@@ -895,6 +974,7 @@
   function renderChart(){
     var chart = document.getElementById("categoryPieChart");
     var legend = document.getElementById("categoryPieLegend");
+    if(!chart || !legend) return;
     legend.innerHTML = "";
 
     var totalCost = totalAllCosts("estimado");
@@ -936,84 +1016,111 @@
     });
   });
 
-  document.getElementById("addCatBtn").addEventListener("click", function(){
-    data.categories.push({id:uid(), name:"Nova categoria", open:true, items:[{id:uid(), name:"", estimado:0, real:0, paid:false}]});
-    renderCategories(); renderSummary(); renderChart(); scheduleSave();
-  });
-
-  document.getElementById("copyPrevMonthBtn").addEventListener("click", function(){
-    var parts = activeMonth.split("-");
-    var yr = parseInt(parts[0],10), mo = parseInt(parts[1],10) - 2;
-    var prevD = new Date(yr, mo, 1);
-    var prevKey = currentMode + "_" + prevD.getFullYear() + "-" + String(prevD.getMonth() + 1).padStart(2,"0");
-    var prevData = loadMonthData(prevKey.replace(currentMode + "_",""));
-
-    if(!prevData || !prevData.categories.length){
-      alert("Nenhum dado encontrado no mês anterior para este perfil."); return;
-    }
-
-    if(confirm("Copiar categorias e lista de compras do mês anterior?")){
-      data.categories = prevData.categories.map(function(c){
-        return {
-          id: uid(), name: c.name, open: false,
-          items: c.items.map(function(i){
-            return { id: uid(), name: i.name, estimado: i.estimado, real: 0, paid: false };
-          })
-        };
-      });
-      renderAll(); save(); showToast("Estrutura copiada!");
-    }
-  });
-
-  document.getElementById("exportBtn").addEventListener("click", function(){
-    var blob = new Blob([JSON.stringify(data,null,2)], {type:"application/json"});
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement("a"); a.href = url; a.download = "backup-" + currentMode + "-" + activeMonth + ".json";
-    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-    showToast("Backup exportado");
-  });
-
-  document.getElementById("exportCsvBtn").addEventListener("click", function(){
-    var rows = [["RENDA"], ["Tipo","Nome","Valor"]];
-    data.income.previsto.forEach(function(r){ rows.push(["Prevista", r.name, r.value]); });
-    data.income.real.forEach(function(r){ rows.push(["Real", r.name, r.value]); });
-    rows.push([""], ["DESPESAS"], ["Categoria","Item","Estimado","Real","Status"]);
-    data.categories.forEach(function(cat){
-      cat.items.forEach(function(it){
-        rows.push([cat.name, it.name, it.estimado, it.real, it.paid?"Pago":"Pendente"]);
-      });
+  var addCatBtn = document.getElementById("addCatBtn");
+  if(addCatBtn){
+    addCatBtn.addEventListener("click", function(){
+      data.categories.push({id:uid(), name:"Nova categoria", open:true, items:[{id:uid(), name:"", estimado:0, real:0, paid:false}]});
+      renderCategories(); renderSummary(); renderChart(); scheduleSave();
     });
-    var content = rows.map(function(r){ return r.map(function(v){ return '"'+String(v).replace(/"/g,'""')+'"'; }).join(";"); }).join("\r\n");
-    var blob = new Blob(["\uFEFF" + content], {type:"text/csv;charset=utf-8;"});
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement("a"); a.href = url; a.download = "orcamento-" + currentMode + "-" + activeMonth + ".csv";
-    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-    showToast("Planilha CSV exportada");
-  });
+  }
 
-  document.getElementById("importBtn").addEventListener("click", function(){ document.getElementById("importFile").click(); });
-  document.getElementById("importFile").addEventListener("change", function(e){
-    var file = e.target.files[0]; if(!file) return;
-    var reader = new FileReader();
-    reader.onload = function(){
-      try{
-        var parsed = JSON.parse(reader.result);
-        if(!parsed.income || !parsed.categories) throw new Error();
-        data = parsed; renderAll(); save(); showToast("Backup importado com sucesso");
-      }catch(err){ alert("Arquivo inválido."); }
-      e.target.value = "";
-    };
-    reader.readAsText(file);
-  });
+  var copyBtn = document.getElementById("copyPrevMonthBtn");
+  if(copyBtn){
+    copyBtn.addEventListener("click", function(){
+      var parts = activeMonth.split("-");
+      var yr = parseInt(parts[0],10), mo = parseInt(parts[1],10) - 2;
+      var prevD = new Date(yr, mo, 1);
+      var prevKey = currentMode + "_" + prevD.getFullYear() + "-" + String(prevD.getMonth() + 1).padStart(2,"0");
+      var prevData = loadMonthData(prevKey.replace(currentMode + "_",""));
 
-  document.getElementById("resetBtn").addEventListener("click", function(){
-    if(confirm("Apagar os dados de " + activeMonth + " ("+currentMode+")?")){
-      data = defaultMonthData(activeMonth); renderAll(); save(); showToast("Dados limpos");
-    }
-  });
+      if(!prevData || !prevData.categories.length){
+        alert("Nenhum dado encontrado no mês anterior para este perfil."); return;
+      }
+
+      if(confirm("Copiar categorias e lista de compras do mês anterior?")){
+        data.categories = prevData.categories.map(function(c){
+          return {
+            id: uid(), name: c.name, open: false,
+            items: c.items.map(function(i){
+              return { id: uid(), name: i.name, estimado: i.estimado, real: 0, paid: false };
+            })
+          };
+        });
+        renderAll(); save(); showToast("Estrutura copiada!");
+      }
+    });
+  }
+
+  var exportBtn = document.getElementById("exportBtn");
+  if(exportBtn){
+    exportBtn.addEventListener("click", function(){
+      var blob = new Blob([JSON.stringify(data,null,2)], {type:"application/json"});
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a"); a.href = url; a.download = "backup-" + currentMode + "-" + activeMonth + ".json";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+      showToast("Backup exportado");
+    });
+  }
+
+  var exportCsvBtn = document.getElementById("exportCsvBtn");
+  if(exportCsvBtn){
+    exportCsvBtn.addEventListener("click", function(){
+      var rows = [["RENDA"], ["Tipo","Nome","Valor"]];
+      data.income.previsto.forEach(function(r){ rows.push(["Prevista", r.name, r.value]); });
+      data.income.real.forEach(function(r){ rows.push(["Real", r.name, r.value]); });
+      rows.push([""], ["DESPESAS"], ["Categoria","Item","Estimado","Real","Status"]);
+      data.categories.forEach(function(cat){
+        cat.items.forEach(function(it){
+          rows.push([cat.name, it.name, it.estimado, it.real, it.paid?"Pago":"Pendente"]);
+        });
+      });
+      var content = rows.map(function(r){ return r.map(function(v){ return '"'+String(v).replace(/"/g,'""')+'"'; }).join(";"); }).join("\r\n");
+      var blob = new Blob(["\uFEFF" + content], {type:"text/csv;charset=utf-8;"});
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a"); a.href = url; a.download = "orcamento-" + currentMode + "-" + activeMonth + ".csv";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+      showToast("Planilha CSV exportada");
+    });
+  }
+
+  var importBtn = document.getElementById("importBtn");
+  if(importBtn){
+    importBtn.addEventListener("click", function(){ document.getElementById("importFile").click(); });
+  }
+
+  var importFile = document.getElementById("importFile");
+  if(importFile){
+    importFile.addEventListener("change", function(e){
+      var file = e.target.files[0]; if(!file) return;
+      var reader = new FileReader();
+      reader.onload = function(){
+        try{
+          var parsed = JSON.parse(reader.result);
+          if(!parsed.income || !parsed.categories) throw new Error();
+          data = parsed; renderAll(); save(); showToast("Backup importado com sucesso");
+        }catch(err){ alert("Arquivo inválido."); }
+        e.target.value = "";
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  var resetBtn = document.getElementById("resetBtn");
+  if(resetBtn){
+    resetBtn.addEventListener("click", function(){
+      if(confirm("Apagar os dados de " + activeMonth + " ("+currentMode+")?")){
+        data = defaultMonthData(activeMonth); renderAll(); save(); showToast("Dados limpos");
+      }
+    });
+  }
 
   renderAll();
+
+  return {
+    switchMode: switchMode,
+    switchTab: switchTab
+  };
 })();
 </script>
 </body>
-</html>
+  </html>
